@@ -54,11 +54,7 @@ rvm_shell "build passenger_nginx_module" do
       --extra-configure-flags='#{configure_flags}'
   INSTALL
   notifies      :restart, resources(:service => "nginx")
-
-  not_if        <<-CHECK
-    #{nginx_install}/sbin/nginx -V 2>&1 | \
-      grep "`cat /tmp/passenger_root_path`/ext/nginx"
-  CHECK
+  not_if        { `#{nginx_install}/sbin/nginx -V 2>&1`.include?("#{node['rvm_passenger']['root_path']}/ext/nginx") }
 end
 
 template "#{nginx_dir}/conf.d/passenger.conf" do
@@ -67,9 +63,4 @@ template "#{nginx_dir}/conf.d/passenger.conf" do
   group     "root"
   mode      "0644"
   notifies  :restart, resources(:service => "nginx")
-end
-
-# Oh the humanity this should not be required.
-file "/tmp/passenger_root_path" do
-  action  :delete
 end
