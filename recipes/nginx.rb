@@ -29,6 +29,7 @@ include_recipe "rvm_passenger"
 
 configure_flags = node['nginx']['configure_flags'].empty? ? 'none' : node['nginx']['configure_flags'].join(" ")
 nginx_install   = node['nginx']['source']['prefix']
+nginx_binary    = node['nginx']['binary']
 nginx_version   = node['nginx']['version']
 nginx_dir       = node['nginx']['dir']
 archive_cache   = node['nginx']['archive_cache'] || Chef::Config['file_cache_path']
@@ -54,7 +55,7 @@ rvm_shell "build passenger_nginx_module" do
       --extra-configure-flags='#{configure_flags}'
   INSTALL
   notifies      :restart, resources(:service => "nginx")
-  not_if        { `#{nginx_install}/sbin/nginx -V 2>&1`.include?("#{node['rvm_passenger']['root_path']}/ext/nginx") }
+  not_if        { `#{nginx_binary} -V 2>&1`.include?("#{node['rvm_passenger']['root_path']}/ext/nginx") }
 end
 
 template "#{nginx_dir}/conf.d/passenger.conf" do
